@@ -18,24 +18,10 @@ public class UserService {
 		return repository.save(user);
 	}
 	
-	/*
-	public User save(User user) {
-		Long id = user.getId();
-		if(repository.findById(id).isPresent()) {
-			return null;
-		}
-		else {
-			User newUser = repository.save(user);
-			return newUser;
-		}
-		
-	}
-	*/
 	public void delete(Long Id) {
 		repository.deleteById(Id);
 	}
-	
-	
+		
 	public List<User> findAll() {
 		return repository.findAll();
 	}

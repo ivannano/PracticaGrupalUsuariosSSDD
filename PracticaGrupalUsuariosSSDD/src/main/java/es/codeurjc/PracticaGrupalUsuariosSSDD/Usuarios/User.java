@@ -19,7 +19,7 @@ public class User {
 	private String name;
 	private LocalDate date;
 	private Estados estado;
-	private float saldo;
+	private double saldo;
 	
 	public enum Estados {
 		Activo, Inactivo;
@@ -63,7 +63,7 @@ public class User {
 		return this.estado;
 	}
 	
-	public float getSaldo() {
+	public double getSaldo() {
 		return this.saldo;
 	}
 	
@@ -83,7 +83,7 @@ public class User {
 		this.estado = newActive;
 	}
 	
-	public void setSaldo(float newSaldo) {
+	public void setSaldo(double newSaldo) {
 		this.saldo = newSaldo;
 	}
 	

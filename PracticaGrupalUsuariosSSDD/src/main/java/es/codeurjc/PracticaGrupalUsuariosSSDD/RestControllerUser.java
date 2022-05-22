@@ -13,7 +13,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -30,6 +33,8 @@ public class RestControllerUser {
 	@Autowired
 	private UserService userService;
 	
+
+//*************************************************************************************************
 	
 	@Operation(summary = "Get a list of users")
 	@GetMapping("/users/")
@@ -118,5 +123,60 @@ public class RestControllerUser {
 			return ResponseEntity.notFound().build();
 		}
 	}
+	
+//*************************************************************************************************
+	
+	@Operation(summary = "Decrease the user´s balance")
+	@PutMapping("/users/bookings/{id}")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "User´s balance updated", content = {
+					@Content(mediaType = "application/json") }),
+			@ApiResponse(responseCode = "400", description = "Invalid id supplied", content = @Content),
+			@ApiResponse(responseCode = "404", description = "User not found", content = @Content) })
+	
+	public ResponseEntity<User> reservaBicicleta(@PathVariable Long id) {
+		Optional<User> user = userService.findById(id);
+		if(user.isPresent()) {
+			RestTemplate rest = new RestTemplate();
+			ObjectNode reserva = rest.getForObject("http://localhost:8081/reserva/{id_bicycle}", ObjectNode.class);
+			Long id_bicycle = reserva.get("id_bicicleta").asLong();
+			String url = "http://localhost:8081/bicycles/" + id_bicycle;
+			ObjectNode bici = rest.getForObject(url, ObjectNode.class);
+			double coste_bici = bici.get("costeBici").asDouble();
+			double coste_total = coste_bici + 2*coste_bici;
+			if(user.get().getEstado().equals(Estados.Activo) && user.get().getSaldo() >= coste_total) {
+				user.get().setSaldo(user.get().getSaldo() - coste_total);
+				return ResponseEntity.ok(user.get());
+			}
+			else {
+				return ResponseEntity.badRequest().build();
+			}
+		}
+		else {
+			return ResponseEntity.notFound().build();
+		}
+	}
+	
+//*************************************************************************************************
+	/*
+	@Operation(summary = "Returns the deposit to the user")
+	@PutMapping("/users/bookings/{id}")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "User´s balance updated", content = {
+					@Content(mediaType = "application/json") }),
+			@ApiResponse(responseCode = "400", description = "Invalid id supplied", content = @Content),
+			@ApiResponse(responseCode = "404", description = "User not found", content = @Content) })
+	
+	public ResponseEntity<User> devolverFianza(@PathVariable Long id) {
+		Optional<User> user = userService.findById(id);
+		if(user.isPresent()) {
+			user.get().setSaldo(user.get().getSaldo() + 2*costebici);
+			return ResponseEntity.ok(user.get());
+		}
+		else {
+			return ResponseEntity.notFound().build();
+		}
+	}
+	*/
 	
 }
