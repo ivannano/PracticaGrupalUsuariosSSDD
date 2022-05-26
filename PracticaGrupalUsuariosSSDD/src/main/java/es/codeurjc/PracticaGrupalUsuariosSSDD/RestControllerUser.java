@@ -4,6 +4,8 @@ import java.net.URI;
 import java.util.Collection;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -30,6 +32,8 @@ import es.codeurjc.PracticaGrupalUsuariosSSDD.Usuarios.User.Estados;
 @RestController
 public class RestControllerUser {
 	
+	private Logger log = LoggerFactory.getLogger(RestControllerUser.class);
+	
 	@Autowired
 	private UserService userService;
 	
@@ -39,7 +43,7 @@ public class RestControllerUser {
 	@Operation(summary = "Get a list of users")
 	@GetMapping("/users/")
 	public Collection<User> getUsers() {
-		return userService.findAll();
+		return userService.findAll(); 
 	}
 
 //*************************************************************************************************	
@@ -56,9 +60,11 @@ public class RestControllerUser {
 		Optional<User> user = userService.findById(id);
 		
 		if(user.isPresent()) {
+			log.info("Usuario encontrado");
 			return ResponseEntity.ok(user.get());
 		}
 		else {
+			log.error("Usuario no encontrado");
 			return ResponseEntity.notFound().build();
 		}
 	}
@@ -72,6 +78,7 @@ public class RestControllerUser {
 		URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
 				.buildAndExpand(user.getId()).toUri();
 		
+		log.info("Usuario creado correctamente");
 		return ResponseEntity.created(location).body(user);
 	}
 	
@@ -91,10 +98,11 @@ public class RestControllerUser {
 		if(user.isPresent()) {
 			user.get().setEstado(Estados.Inactivo);
 			userService.save(user.get());
-			
+			log.info("Usuario borrado correctamente");
 			return ResponseEntity.ok(user.get());
 		}
 		else {
+			log.error("Usuario no encontrado");
 			return ResponseEntity.notFound().build();
 		}
 	}	
@@ -116,10 +124,11 @@ public class RestControllerUser {
 		if(user.isPresent()) {
 			newUser.setId(id);
 			userService.save(newUser);
-			
+			log.info("Usuario modificado correctamente");
 			return ResponseEntity.ok(user.get());
 		}
 		else {
+			log.error("Usuario no encontrado");
 			return ResponseEntity.notFound().build();
 		}
 	}
@@ -142,13 +151,16 @@ public class RestControllerUser {
 			if(user.get().getEstado().equals(Estados.Activo) && user.get().getSaldo() >= coste_total) {
 				user.get().setSaldo(user.get().getSaldo() - coste_total);
 				userService.save(user.get());
+				log.info("Reserva cobrada correctamente");
 				return ResponseEntity.ok(user.get());
 			}
 			else {
+				log.error("Usuario está inactivo o no tiene saldo");
 				return ResponseEntity.badRequest().build();
 			}
 		}
 		else {
+			log.error("Usuario no encontrado");
 			return ResponseEntity.notFound().build();
 		}
 	}
@@ -170,9 +182,11 @@ public class RestControllerUser {
 			double coste_fianza = 2*coste_bici;
 			user.get().setSaldo(user.get().getSaldo() + coste_fianza);
 			userService.save(user.get());
+			log.info("Fianza devuelta correctamente");
 			return ResponseEntity.ok(user.get());
 		}
 		else {
+			log.error("Usuario no encontrado");
 			return ResponseEntity.notFound().build(); 
 		}
 	}
